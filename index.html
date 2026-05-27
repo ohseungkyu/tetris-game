@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테트리스 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            border: 3px solid #333;
+            background-color: #1a1a2e;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 200px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .next-piece {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .next-piece-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #nextCanvas {
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .controls h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .control-item {
+            margin: 8px 0;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .control-item strong {
+            color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-direction: column;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #startBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        #startBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        #pauseBtn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        #pauseBtn:hover {
+            background: #d97706;
+        }
+
+        #resetBtn {
+            background: #ef4444;
+            color: white;
+        }
+
+        #resetBtn:hover {
+            background: #dc2626;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 36px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .game-over.show {
+            display: flex;
+        }
+
+        .game-over-score {
+            font-size: 24px;
+            color: #fbbf24;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 20px;
+                gap: 20px;
+            }
+
+            canvas {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-section">
+            <h1>🎮 테트리스</h1>
+            <canvas id="gameCanvas" width="200" height="400"></canvas>
+        </div>
+
+        <div class="info-section">
+            <div class="info-box">
+                <div class="info-label">점수</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">레벨</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-label">라인</div>
+                <div class="info-value" id="lines">0</div>
+            </div>
+
+            <div class="next-piece">
+                <div class="next-piece-label">다음 블록</div>
+                <canvas id="nextCanvas" width="80" height="80"></canvas>
+            </div>
+
+            <div class="controls">
+                <h3>조작 방법</h3>
+                <div class="control-item"><strong>← →</strong> 이동</div>
+                <div class="control-item"><strong>↓</strong> 빠르게 내리기</div>
+                <div class="control-item"><strong>스페이스</strong> 회전</div>
+            </div>
+
+            <div class="buttons">
+                <button id="startBtn">게임 시작</button>
+                <button id="pauseBtn">일시정지</button>
+                <button id="resetBtn">리셋</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOverScreen">
+        <div>게임 오버!</div>
+        <div class="game-over-score">최종 점수: <span id="finalScore">0</span></div>
+    </div>
+
+    <script src="tetris.js"></script>
+</body>
+</html>
